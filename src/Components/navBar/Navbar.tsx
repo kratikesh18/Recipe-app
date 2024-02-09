@@ -1,9 +1,10 @@
-import React, { useContext } from "react";
+import  { useContext } from "react";
 import { NavLink } from "react-router-dom";
-import GlobalState, { RecipieContext } from "../../Context";
+import { RecipeContextValue, RecipieContext } from "../../Context";
 
 function Navbar() {
-  const {searchParams , setSetsearchParams , handleOnSubmit} = useContext(RecipieContext)
+
+  const {searchParams, setSearchParams , handleOnSubmit} = useContext(RecipieContext) as RecipeContextValue 
 
   return (
     <nav className="flex justify-between items-center py-6 container mx-auto flex-col lg:flex-row gap-5 lg:gap-0">
@@ -15,14 +16,17 @@ function Navbar() {
       </h2>
 
       <form onSubmit={handleOnSubmit}>
+
         <input
           type="text"
           name="search"
           placeholder="Search Items...."
           className="bg-white/75 p-3 px-8 rounded-full outline-none lg:w-96 shadow-lg shadow-red-100 focus:shadow-red-200"
           value={searchParams}
-          onChange={(e) => setSetsearchParams(e.target.value)}
+          onChange={(e) => setSearchParams(e.target.value)}
         />
+
+
       </form>
       
       <ul className="flex gap-5 ">

@@ -1,20 +1,48 @@
-import { createContext, useState } from "react";
+import React, { createContext, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-export const RecipieContext = createContext(null);
+interface Recipe {
+  id: string;
+  title: string;
+  publisher: string;
+  image_url: string;
+}
 
-export default function GlobalState({ children }) {
-  const [searchParams, setSetsearchParams] = useState("");
-  const [loading, setLoading] = useState(false);
+interface GlobalStateProps{
+  children : React.ReactNode
+}
 
-  const [recipeList, setRecipeList] = useState([]);
-  const [recipeDetails, setRecipeDetails] = useState(null);
+export interface RecipeContextValue {
+  searchParams: string;
+  setSearchParams: React.Dispatch<React.SetStateAction<string>>;
+  handleOnSubmit: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  // Add other properties as needed
+  loading: boolean;
+  recipeList: Recipe[];
+  recipeDetails?: Recipe;
+  setRecipeDetails: React.Dispatch<React.SetStateAction<Recipe | undefined>>;
+  handleAddToFavourites: (getCurrentItem: Recipe) => void;
+  favouriteList: Recipe[];
+}
 
-  const [favouriteList, setFavouriteList] = useState([])
 
-  const navigate  = useNavigate()
-  async function handleOnSubmit(e) {
+
+export const RecipieContext = createContext<RecipeContextValue | undefined>(undefined);
+
+export default function GlobalState( {children}:GlobalStateProps ) {
+  const [searchParams, setSearchParams] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const [recipeList, setRecipeList] = useState<Recipe[]>([]);
+
+  const [recipeDetails, setRecipeDetails] = useState<Recipe | undefined>();
+
+  const [favouriteList, setFavouriteList] = useState<Recipe[]>([]);
+
+  const navigate = useNavigate();
+
+  async function handleOnSubmit(e: React.FormEvent<HTMLFormElement>) {
     setLoading(true);
     e.preventDefault();
     try {
@@ -24,53 +52,48 @@ export default function GlobalState({ children }) {
         )
       ).data;
 
-      
-      // const data= await response.json()
-
-      console.log(response);
-
       if (response?.data?.recipes) {
         setRecipeList(response?.data?.recipes);
       }
+
       setLoading(false);
-      setSetsearchParams("");
-      navigate('/')
+      setSearchParams("");
+      navigate("/");
     } catch (error) {
       console.log(error.message);
       setLoading(false);
-      setSetsearchParams("");
+      setSearchParams("");
     }
   }
-  
-  function handleAddToFavourites(getCurrentItem){
-    console.log(getCurrentItem);
-    let copyOfFavList = [...favouriteList]
-    const index = copyOfFavList.findIndex(item => item.id === getCurrentItem.id)
 
-    if(index === -1){
+  function handleAddToFavourites(getCurrentItem: Recipe) {
+    let copyOfFavList = [...favouriteList];
+    const index = copyOfFavList.findIndex(
+      (item) => item.id === getCurrentItem.id
+    );
 
-      copyOfFavList.push(getCurrentItem)
+    if (index === -1) {
+      copyOfFavList.push(getCurrentItem);
+    } else {
+      copyOfFavList.splice(index, 1);
     }
-    else{
-      copyOfFavList.splice(index)
-    }
-    
 
-    setFavouriteList(copyOfFavList)
+    setFavouriteList(copyOfFavList);
   }
-  console.log("Favourite list is " , favouriteList)
+  console.log("Favourite list is ", favouriteList);
   return (
     <RecipieContext.Provider
+
       value={{
         searchParams,
-        setSetsearchParams,
+        setSearchParams,
         handleOnSubmit,
         loading,
         recipeList,
         recipeDetails,
         setRecipeDetails,
         handleAddToFavourites,
-        favouriteList
+        favouriteList,
       }}
     >
       {children}
